@@ -218,6 +218,35 @@ const Detail = () => {
     3600 * 1000, // 1h
   ]
 
+  const objectiveType = hasObjectiveType(objective)
+
+  const renderObjective = () => {
+    switch (objectiveType) {
+      case ObjectiveType.Ratio:
+        return (
+          <div>
+            <h6>
+              Objective in <strong>{formatDuration(Number(objective.window?.seconds))}</strong>
+            </h6>
+            <h2>{(100 * objective.target).toFixed(3)}%</h2>
+          </div>
+        )
+      case ObjectiveType.Latency:
+        return (
+          <div>
+            <h6>
+              Objective in <strong>{formatDuration(Number(objective.window?.seconds))}</strong>
+            </h6>
+            <h2>
+              {(100 * objective.target).toFixed(3)}% &lt; {renderLatencyTarget(objective)}
+            </h2>
+          </div>
+        )
+      default:
+        return <div></div>
+    }
+  }
+
   const renderAvailability = () => {
     const headline = <h6>Availability</h6>
     switch (statusState) {
@@ -352,16 +381,8 @@ const Detail = () => {
           </Row>
           <Row>
             <div className="metrics">
-              <div>
-                <h6>
-                  Objective in{' '}
-                  <strong>{formatDuration(Number(objective.window?.seconds) * 1000)}</strong>
-                </h6>
-                <h2>{(100 * objective.target).toFixed(3)}%</h2>
-              </div>
-
+              {renderObjective()}
               {renderAvailability()}
-
               {renderErrorBudget()}
             </div>
           </Row>
@@ -434,6 +455,7 @@ const Detail = () => {
             <Col xs={12} md={6}>
               <ErrorsGraph
                 client={client}
+                type={objectiveType}
                 labels={labels}
                 grouping={groupingLabels}
                 from={from}
