@@ -2,7 +2,7 @@ import React, {useEffect, useLayoutEffect, useRef, useState} from 'react'
 import {Spinner} from 'react-bootstrap'
 import UplotReact from 'uplot-react'
 import uPlot, {AlignedData} from 'uplot'
-import {formatDuration, ObjectiveType, PROMETHEUS_URL} from '../../App'
+import {formatDuration, PROMETHEUS_URL} from '../../App'
 import {IconExternal} from '../Icons'
 import {Labels, labelsString, parseLabelValue} from '../../labels'
 import {reds} from './colors'
@@ -14,7 +14,7 @@ import {GraphErrorsResponse, Series} from '../../proto/objectives/v1alpha1/objec
 
 interface ErrorsGraphProps {
   client: PromiseClient<typeof ObjectiveService>
-  type: ObjectiveType
+  type: string | undefined
   labels: Labels
   grouping: Labels
   from: number
@@ -83,7 +83,7 @@ const ErrorsGraph = ({
     <>
       <div style={{display: 'flex', alignItems: 'baseline', justifyContent: 'space-between'}}>
         <h4>
-          Errors
+          {type === 'latency' ? 'Too Slow' : 'Errors'}
           {errorsLoading ? (
             <Spinner
               animation="border"
@@ -115,10 +115,10 @@ const ErrorsGraph = ({
         )}
       </div>
       <div>
-        {type === ObjectiveType.Ratio ? (
-          <p>What percentage of requests were errors?</p>
-        ) : (
+        {type === 'latency' ? (
           <p>What percentage of requests were too slow?</p>
+        ) : (
+          <p>What percentage of requests were errors?</p>
         )}
       </div>
 

@@ -11,13 +11,7 @@ import {
   Table,
   Tooltip as OverlayTooltip,
 } from 'react-bootstrap'
-import {
-  API_BASEPATH,
-  formatDuration,
-  hasObjectiveType,
-  ObjectiveType,
-  renderLatencyTarget,
-} from '../App'
+import {API_BASEPATH, formatDuration, renderLatencyTarget} from '../App'
 import {Link, useLocation, useNavigate} from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import {IconArrowDown, IconArrowUp, IconArrowUpDown, IconWarning} from '../components/Icons'
@@ -519,13 +513,13 @@ const List = () => {
   }
 
   const renderObjective = (o: TableObjective) => {
-    switch (hasObjectiveType(o)) {
-      case ObjectiveType.Ratio:
-        return <>{(100 * o.target).toFixed(2)}%</>
-      case ObjectiveType.Latency:
+    switch (o.objective.indicator?.options.case) {
+      case 'ratio':
+        return <>{(100 * o.objective.target).toFixed(2)}%</>
+      case 'latency':
         return (
           <>
-            {(100 * o.target).toFixed(2)}% &lt; {renderLatencyTarget(o)}
+            {(100 * o.objective.target).toFixed(2)}% &lt; {renderLatencyTarget(o.objective)}
           </>
         )
       default:

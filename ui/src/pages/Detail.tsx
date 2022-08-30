@@ -11,7 +11,7 @@ import {
   Spinner,
   Tooltip as OverlayTooltip,
 } from 'react-bootstrap'
-import {API_BASEPATH, formatDuration} from '../App'
+import {API_BASEPATH, formatDuration, renderLatencyTarget} from '../App'
 import Navbar from '../components/Navbar'
 import {MetricName, parseLabels} from '../labels'
 import ErrorBudgetGraph from '../components/graphs/ErrorBudgetGraph'
@@ -218,24 +218,24 @@ const Detail = () => {
     3600 * 1000, // 1h
   ]
 
-  const objectiveType = hasObjectiveType(objective)
-
   const renderObjective = () => {
-    switch (objectiveType) {
-      case ObjectiveType.Ratio:
+    switch (objective.indicator?.options.case) {
+      case 'ratio':
         return (
           <div>
             <h6>
-              Objective in <strong>{formatDuration(Number(objective.window?.seconds))}</strong>
+              Objective in{' '}
+              <strong>{formatDuration(Number(objective.window?.seconds) * 1000)}</strong>
             </h6>
             <h2>{(100 * objective.target).toFixed(3)}%</h2>
           </div>
         )
-      case ObjectiveType.Latency:
+      case 'latency':
         return (
           <div>
             <h6>
-              Objective in <strong>{formatDuration(Number(objective.window?.seconds))}</strong>
+              Objective in{' '}
+              <strong>{formatDuration(Number(objective.window?.seconds) * 1000)}</strong>
             </h6>
             <h2>
               {(100 * objective.target).toFixed(3)}% &lt; {renderLatencyTarget(objective)}
@@ -455,7 +455,7 @@ const Detail = () => {
             <Col xs={12} md={6}>
               <ErrorsGraph
                 client={client}
-                type={objectiveType}
+                type={objective.indicator?.options.case}
                 labels={labels}
                 grouping={groupingLabels}
                 from={from}

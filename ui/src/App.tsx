@@ -2,7 +2,7 @@ import React from 'react'
 import {BrowserRouter, Route, Routes} from 'react-router-dom'
 import List from './pages/List'
 import Detail from './pages/Detail'
-import {Objective, QueryMatchers} from './client'
+import {Objective} from './proto/objectives/v1alpha1/objectives_pb'
 
 // @ts-expect-error - this is passed from the HTML template.
 export const PATH_PREFIX: string = window.PATH_PREFIX
@@ -28,21 +28,13 @@ export enum ObjectiveType {
   Latency,
 }
 
-export const hasObjectiveType = (o: Objective): ObjectiveType => {
-  let objectiveType: ObjectiveType = ObjectiveType.Ratio
-  if (o.indicator?.latency?.total.metric !== '') {
-    objectiveType = ObjectiveType.Latency
-  }
-  return objectiveType
-}
-
 export const renderLatencyTarget = (o: Objective): string => {
-  const m: QueryMatchers | undefined = o.indicator?.latency?.success.matchers?.find(
-    (m: QueryMatchers) => m.name === 'le',
-  )
-  if (m?.value !== undefined) {
-    // multiply with 1000 to get values from seconds to milliseconds
-    return formatDuration(1000 * parseFloat(m.value))
+  if (o.indicator?.options.case === 'latency') {
+    const m = o.indicator.options.value.success?.matchers.find((m) => m.name === 'le')
+    if (m?.value !== undefined) {
+      // multiply with 1000 to get values from seconds to milliseconds
+      return formatDuration(1000 * parseFloat(m.value))
+    }
   }
   return ''
 }
