@@ -37,6 +37,7 @@ import (
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/protobuf/types/known/durationpb"
 
+	connectprometheus "github.com/pyrra-dev/pyrra/connect/prometheus"
 	objectivesv1alpha1 "github.com/pyrra-dev/pyrra/proto/objectives/v1alpha1"
 	"github.com/pyrra-dev/pyrra/proto/objectives/v1alpha1/objectivesv1alpha1connect"
 	"github.com/pyrra-dev/pyrra/slo"
@@ -177,13 +178,24 @@ func cmdAPI(logger log.Logger, reg *prometheus.Registry, promClient api.Client, 
 	r := chi.NewRouter()
 	r.Use(cors.Handler(cors.Options{})) // TODO: Disable by default
 
+	prometheusInterceptor := connectprometheus.NewInterceptor(reg)
+
 	r.Route(routePrefix, func(r chi.Router) {
 		objectiveService := &objectiveServer{
 			logger:  logger,
 			promAPI: promAPI,
-			client:  objectivesv1alpha1connect.NewObjectiveBackendServiceClient(http.DefaultClient, apiURL.String()),
+			client: objectivesv1alpha1connect.NewObjectiveBackendServiceClient(
+				http.DefaultClient,
+				apiURL.String(),
+				connect.WithInterceptors(prometheusInterceptor),
+			),
 		}
-		objectivePath, objectiveHandler := objectivesv1alpha1connect.NewObjectiveServiceHandler(objectiveService)
+		objectivePath, objectiveHandler := objectivesv1alpha1connect.NewObjectiveServiceHandler(
+			objectiveService,
+			connect.WithInterceptors(
+				prometheusInterceptor,
+			),
+		)
 		if routePrefix != "/" {
 			r.Mount(objectivePath, http.StripPrefix(routePrefix, objectiveHandler))
 		} else {
